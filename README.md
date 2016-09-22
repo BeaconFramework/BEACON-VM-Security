@@ -10,13 +10,13 @@ After the email containing the report has been sent, a firewall template is buil
 
 Before exporting these projects to JARs, certain parameters will have to set.
 
-***FCOExectuable***
+### FCOExectuable
 
 ***private static final String SCANNER_IP*** (The IP of the server running the openvas scanner)
 
 ***private static final int PORT = 8341*** (The port to be used, 8341 default for FCO)
 
-***VulnerabilityScanner***
+### VulnerabilityScanner
 
 ***final String username*** (The username of the email address used to send the report email)
 
