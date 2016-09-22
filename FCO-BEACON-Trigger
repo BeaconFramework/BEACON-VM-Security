@@ -1,0 +1,107 @@
+function beacon_trigger(p)
+  	print('========== BEACON TRIGGER INVOKED ==========')
+	if(p == nil) then
+		return {
+			ref = "beacon_trigger",
+			name = "BEACON Trigger",
+            description = "Automatically start newly created servers if customer has AUTO_START_SERVERS Customer Key Set to 'yes'",
+            priority = 0,
+            triggerType = "POST_JOB_STATE_CHANGE",
+            triggerOptions = {"SUCCESSFUL"},
+            api = "TRIGGER",
+            version = 1,
+	}
+	end
+	if(p.input:getJobType() == new("JobType","CREATE_SERVER")) then
+        local serverId = p.input:getItemUUID()
+        local ipAddress = getServerIp(serverId).serverIP
+        local customerUUID = p.input:getCustomerUUID()
+        local customerCheck = checkCustomerKey(customerUUID, "BEACON_TRIGGER")
+        print("THIS IS CORRECT TRIGGER")
+    	if(customerCheck.success) then
+			local userToken = getUserToken(customerUUID)
+            local emailID = getEmailID(customerUUID)
+            print('EMAIL ID: ' ..emailID)
+			userAPI:setSessionUser(userToken)
+			print('Starting up server: ' .. serverId)
+			local startServer = userAPI:changeServerStatus(serverId, new("ServerStatus","RUNNING"), true, nil, nil)
+			local command = string.format("sudo -u mramannavar java -jar /home/mramannavar/FCOExecutableJAR.jar %s %s %s", serverId, ipAddress, emailID)
+    		io.popen(command)
+      		print('========== BEACON EXECUTABLE INVOKED ==========')
+		else
+			print("BEACON - KEY NOT SET")
+		end
+	end
+	return { exitState = "SUCCESS" }
+end
+
+function getServerIp(serverUUID)
+	local searchFilter = new("SearchFilter")
+	local filterCondition1 = new("FilterCondition")
+	filterCondition1:setField('resourceuuid')
+	filterCondition1:setValue({serverUUID})
+	filterCondition1:setCondition(new("Condition","IS_EQUAL_TO"))
+	searchFilter:addCondition(filterCondition1)
+	local server = adminAPI:listResources(searchFilter,nil,new("ResourceType","SERVER"))
+	if(server:getList():size() == 1) then
+		local ipAddress = 		server:getList():get(0):getNics():get(0):getIpAddresses():get(0):getIpAddress()
+		return {success = true, serverIP = ipAddress}
+	else
+		return {success = false}
+	end
+end
+
+function getUserToken(customerUUID)
+	local searchFilter = new("SearchFilter")
+	local filterCondition1 = new("FilterCondition")
+	filterCondition1:setField('resourceuuid')
+	filterCondition1:setValue({customerUUID})
+	filterCondition1:setCondition(new("Condition","IS_EQUAL_TO"))
+	searchFilter:addCondition(filterCondition1)
+	local customer = adminAPI:listResources(searchFilter,nil,new("ResourceType","CUSTOMER"))
+
+	local userEmail = customer:getList():get(0):getUsers():get(0):getEmail()
+
+	return userEmail .. "/" .. customer:getList():get(0):getResourceUUID()
+end
+
+function getEmailID(customerUUID)
+    local searchFilter = new("SearchFilter")
+    local filterCondition1 = new("FilterCondition")
+	filterCondition1:setField('resourceuuid')
+	filterCondition1:setValue({customerUUID})
+	filterCondition1:setCondition(new("Condition","IS_EQUAL_TO"))
+	searchFilter:addCondition(filterCondition1)
+	local customer = adminAPI:listResources(searchFilter,nil,new("ResourceType","CUSTOMER"))
+
+	local userEmail = customer:getList():get(0):getUsers():get(0):getEmail()
+    return userEmail
+end  
+
+function checkCustomerKey(customerUUID, resourceKeyName)
+	local searchFilter = new("SearchFilter")
+	local filterCondition1 = new("FilterCondition")
+	filterCondition1:setField('resourceuuid')
+	filterCondition1:setValue({customerUUID})
+	filterCondition1:setCondition(new("Condition","IS_EQUAL_TO"))
+	local filterCondition2 = new("FilterCondition")
+	filterCondition2:setField('resourcekey.name')
+	filterCondition2:setValue({resourceKeyName})
+	filterCondition2:setCondition(new("Condition","IS_EQUAL_TO"))
+	searchFilter:addCondition(filterCondition1)
+	searchFilter:addCondition(filterCondition2)
+	local customer = adminAPI:listResources(searchFilter,nil,new("ResourceType","CUSTOMER"))
+	if(customer:getList():size() == 1) then
+		for i = 0, customer:getList():get(0):getResourceKey():size() - 1, 1 do
+			if(customer:getList():get(0):getResourceKey():get(i):getName() == resourceKeyName) then
+				return {success = true, keyValue = customer:getList():get(0):getResourceKey():get(i):getValue() }
+			end
+		end
+	else
+		return {success = false}
+	end
+end
+
+function register()
+	return {"beacon_trigger"}
+end
