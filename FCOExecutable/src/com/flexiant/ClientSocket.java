@@ -32,7 +32,8 @@ public class ClientSocket {
 	private static final Logger LOGGER = Logger.getLogger("logger");
 	
 	//IP of the server hosting openvas
-	private static final String SCANNER_IP = "109.231.126.132";
+	private static final String SCANNER_IP = "";
+	//Port used by scanner listener
 	private static final int PORT = 8341;
 
 	// Fetch the log configuration
