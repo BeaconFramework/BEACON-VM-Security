@@ -1,3 +1,4 @@
+
 function beacon_trigger(p)
   	print('========== BEACON TRIGGER INVOKED ==========')
 	if(p == nil) then
@@ -13,8 +14,13 @@ function beacon_trigger(p)
 	}
 	end
 	if(p.input:getJobType() == new("JobType","CREATE_SERVER")) then
+    	print(dump(p))
         local serverId = p.input:getItemUUID()
         local ipAddress = getServerIp(serverId).serverIP
+    	local username = getServerUsername(serverId).serverUsername
+    	local password = getServerPassword(serverId).serverPassword
+    	print(username)
+    	print(password)
         local customerUUID = p.input:getCustomerUUID()
         local customerCheck = checkCustomerKey(customerUUID, "BEACON_TRIGGER")
         print("THIS IS CORRECT TRIGGER")
@@ -25,7 +31,7 @@ function beacon_trigger(p)
 			userAPI:setSessionUser(userToken)
 			print('Starting up server: ' .. serverId)
 			local startServer = userAPI:changeServerStatus(serverId, new("ServerStatus","RUNNING"), true, nil, nil)
-			local command = string.format("sudo -u mramannavar java -jar /home/mramannavar/FCOExecutableJAR.jar %s %s %s", serverId, ipAddress, emailID)
+			local command = string.format("sudo -u mramannavar java -jar /home/mramannavar/FCOExecutableJARFCO.jar %s %s %s %s %s", serverId, ipAddress, emailID, username, password)
     		io.popen(command)
       		print('========== BEACON EXECUTABLE INVOKED ==========')
 		else
@@ -49,6 +55,38 @@ function getServerIp(serverUUID)
 	else
 		return {success = false}
 	end
+end
+
+function getServerUsername(serverUUID)
+	local searchFilter = new("SearchFilter")
+	local filterCondition1 = new("FilterCondition")
+	filterCondition1:setField('resourceuuid')
+	filterCondition1:setValue({serverUUID})
+	filterCondition1:setCondition(new("Condition","IS_EQUAL_TO"))
+	searchFilter:addCondition(filterCondition1)
+	local server = adminAPI:listResources(searchFilter,nil,new("ResourceType","SERVER"))
+	if(server:getList():size() == 1) then
+		local username = server:getList():get(0):getInitialUser()
+    	return {success = true, serverUsername = username}
+    else
+    	return {success = false}
+    end
+end
+
+function getServerPassword(serverUUID)
+	local searchFilter = new("SearchFilter")
+	local filterCondition1 = new("FilterCondition")
+	filterCondition1:setField('resourceuuid')
+	filterCondition1:setValue({serverUUID})
+	filterCondition1:setCondition(new("Condition","IS_EQUAL_TO"))
+	searchFilter:addCondition(filterCondition1)
+	local server = adminAPI:listResources(searchFilter,nil,new("ResourceType","SERVER"))
+	if(server:getList():size() == 1) then
+    	local password = server:getList():get(0):getInitialPassword()
+    	return {success = true, serverPassword = password}
+    else
+    	return {success = false}
+    end
 end
 
 function getUserToken(customerUUID)
@@ -100,6 +138,23 @@ function checkCustomerKey(customerUUID, resourceKeyName)
 	else
 		return {success = false}
 	end
+end
+
+function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
+end
+
+function register()
+	return {"beacon_firewall_trigger"}
 end
 
 function register()
