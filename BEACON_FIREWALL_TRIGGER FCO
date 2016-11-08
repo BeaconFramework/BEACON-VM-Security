@@ -1,0 +1,95 @@
+
+function beacon_firewall_trigger(p)
+  	print('========== BEACON FIREWALL TRIGGER INVOKED ==========')
+	if(p == nil) then
+		return {
+			ref = "beacon_firewall_trigger",
+			name = "BEACON Firewall Trigger",
+            description = "",
+            priority = 0,
+            triggerType = "POST_USER_API_CALL",
+            triggerOptions = {"addKey"},
+            api = "TRIGGER",
+            version = 1,
+	}
+	end
+	if(p~=nil) then
+        local keyName = p.input[2]:getName()
+    	local serverUUID = p.input[1]
+    	print("Server UUID:")
+    	print(p.input[1])
+    	print("Key Name:")
+    	print(p.input[2]:getName())
+        local ipAddress = getServerIp(serverUUID).serverIP
+    	print("Server IP:")
+    	print(ipAddress)
+        local customerUUID = p.customer:getResourceUUID()
+        local customerCheck = checkCustomerKey(customerUUID, "BEACON_TRIGGER")
+        print("THIS IS CORRECT TRIGGER")
+    	if(customerCheck.success) then
+			local command = string.format("sudo -u mramannavar java -jar /home/mramannavar/FCOFirewallExecutableJAR.jar %s %s", ipAddress, keyName)
+    		io.popen(command)
+      		print('========== BEACON EXECUTABLE INVOKED ==========')
+		else
+			print("BEACON - KEY NOT SET")
+		end
+	end
+	return { exitState = "SUCCESS" }
+end
+
+function getServerIp(serverUUID)
+	local searchFilter = new("SearchFilter")
+	local filterCondition1 = new("FilterCondition")
+	filterCondition1:setField('resourceuuid')
+	filterCondition1:setValue({serverUUID})
+	filterCondition1:setCondition(new("Condition","IS_EQUAL_TO"))
+	searchFilter:addCondition(filterCondition1)
+	local server = adminAPI:listResources(searchFilter,nil,new("ResourceType","SERVER"))
+	if(server:getList():size() == 1) then
+		local ipAddress = 		server:getList():get(0):getNics():get(0):getIpAddresses():get(0):getIpAddress()
+		return {success = true, serverIP = ipAddress}
+	else
+		return {success = false}
+	end
+end
+
+function checkCustomerKey(customerUUID, resourceKeyName)
+	local searchFilter = new("SearchFilter")
+	local filterCondition1 = new("FilterCondition")
+	filterCondition1:setField('resourceuuid')
+	filterCondition1:setValue({customerUUID})
+	filterCondition1:setCondition(new("Condition","IS_EQUAL_TO"))
+	local filterCondition2 = new("FilterCondition")
+	filterCondition2:setField('resourcekey.name')
+	filterCondition2:setValue({resourceKeyName})
+	filterCondition2:setCondition(new("Condition","IS_EQUAL_TO"))
+	searchFilter:addCondition(filterCondition1)
+	searchFilter:addCondition(filterCondition2)
+	local customer = adminAPI:listResources(searchFilter,nil,new("ResourceType","CUSTOMER"))
+	if(customer:getList():size() == 1) then
+		for i = 0, customer:getList():get(0):getResourceKey():size() - 1, 1 do
+			if(customer:getList():get(0):getResourceKey():get(i):getName() == resourceKeyName) then
+				return {success = true, keyValue = customer:getList():get(0):getResourceKey():get(i):getValue() }
+			end
+		end
+	else
+		return {success = false}
+	end
+end
+
+function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
+end
+
+function register()
+	return {"beacon_firewall_trigger"}
+end
