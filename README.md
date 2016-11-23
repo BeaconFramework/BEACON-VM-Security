@@ -2,7 +2,7 @@
 
 ## Deployable JARs
 
-FCOFirewallExecutable, FCOExecutable and VulnerabilityScanner are three deployable JARs which facilitate taking VM details, passing these details to an openvas deployment and emailing the VM owner a generated security vulnerability report.  Furthermore, a firewall template is generated and deployed to the VM on the FCO platform for additional security measures.
+***FCOFirewallExecutable,*** ***FCOExecutable*** and ***VulnerabilityScanner*** are three deployable JARs which facilitate taking VM details, passing these details to an openvas deployment and emailing the VM owner a generated security vulnerability report.  Furthermore, a firewall template is generated and deployed to the VM on the FCO platform for additional security measures.
 
 ***FCOFirewallExecutable*** is a runnable JAR used only by FCO in order to retrieve a firewall key applied to a VM.  These keys, along with the IP of the server they were applied to are sent to the scanner listener.  The scanner listener then takes this key and IP and uses them to customise the firewall which is applied to a VM upon scan completion, provided the IPs match up.
 
@@ -11,13 +11,13 @@ FCOFirewallExecutable, FCOExecutable and VulnerabilityScanner are three deployab
 FCOExecutable takes arguments upon launch.  These arguments, minimally should be
 
 ***Server UUID,***
-*** Server IP,***
-*** Email Address***
+***Server IP,***
+***Email Address***
 
 However, additional arguments can also be given in the form of credentials:
 
 ***Username,***
-*** Password***
+***Password***
 
 ***VulnerabilityScanner*** is a JAR which acts as a listener for the openvas installation.  When the listener detects a request from the FCOExecutable, it gathers the information sent.  This information is then used to set up a security scan of the newly created VM using the openvas server.  Once the scan is complete, the generated report is emailed to the email address associated with the customer account on the FCO.  
 
@@ -36,26 +36,26 @@ Both Executable JARs use config files to load details.
 #### FCO Credentials
 
 ***FCOCloudUsernameCredential,***
-*** FCOCloudPasswordCredential,***
-*** FCOCloudAdminUUID,***
-*** FCOAdminEndpoint,***
-*** FCOUserEndpoint***
+***FCOCloudPasswordCredential,***
+***FCOCloudAdminUUID,***
+***FCOAdminEndpoint,***
+***FCOUserEndpoint***
 
 #### Openstack Credentials
 
 ***OpenstackCloudUsernameCredential,***
-*** OpenstackCloudPasswordCredential,***
-*** OpenstackCloudAdminUUID,***
-*** OpenstackAdminEndpoint,***
-*** OpenstackUserEndpoint***
+***OpenstackCloudPasswordCredential,***
+***OpenstackCloudAdminUUID,***
+***OpenstackAdminEndpoint,***
+***OpenstackUserEndpoint***
 
 #### OpenNebula Credentials
 	
 ***OpenNebulaCloudUsernameCredential,***
-*** OpenNebulaCloudPasswordCredential,***
-*** OpenNebulaCloudAdminUUID,***
-*** OpenNebulaAdminEndpoint,***
-*** OpenNebulaUserEndpoint***
+***OpenNebulaCloudPasswordCredential,***
+***OpenNebulaCloudAdminUUID,***
+***OpenNebulaAdminEndpoint,***
+***OpenNebulaUserEndpoint***
 
 ## Activation Scripts
 
