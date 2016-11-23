@@ -55,6 +55,7 @@ public class ClientSocket {
 		}
 	}
 
+	// Try to SSH to the VM to check if is accepting connections
 	private static void trySSHConnection(String username, String password, String serverIP, int sshPort)
 			throws JSchException {
 
@@ -72,9 +73,9 @@ public class ClientSocket {
 	private static Enum<SSHResult> getSSHConnectionResult(String username, String password, String serverIP,
 			int sshPort) throws InterruptedException {
 
+		// Number of times to try connection
 		int sshTries = 6;
 		Enum<SSHResult> result;
-
 		for (int i = 0; i <= sshTries; i++) {
 
 			try {
@@ -86,20 +87,21 @@ public class ClientSocket {
 			} catch (Exception e) {
 				// Bad credentials
 				if (e.getMessage().contains("Auth fail")) {
-
+					
 					result = SSHResult.AUTH_FAIL;
 					return result;
 				}
 			}
-
+			//Wait before reattempting the connection
 			Thread.sleep(30000); // 30 Seconds
 			i++;
 		}
-
+		
 		result = SSHResult.REFUSED;
 		return result;
 	}
-
+	
+	//Get execution path in order to get config file path
 	public static String getPath() {
 		String decodedPath = new java.io.File(
 				ClientSocket.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getAbsolutePath();
@@ -108,11 +110,12 @@ public class ClientSocket {
 
 		int index = decodedPath.lastIndexOf('/');
 		decodedPath = decodedPath.substring(0, index);
-		
+
 		decodedPath = decodedPath + "/FCOExecutable.properties";
 		return decodedPath;
 	}
 
+	//Load credentials from config file
 	public static void loadConfig() throws URISyntaxException {
 
 		Properties prop = new Properties();
@@ -127,7 +130,8 @@ public class ClientSocket {
 
 			in = new InputStreamReader(new FileInputStream(decodedPath), "UTF-8");
 			prop.load(in);
-
+			
+			//Load parameters from the file
 			SCANNER_IP = prop.getProperty("scannerIP");
 			PORT = Integer.parseInt(prop.getProperty("port"));
 
@@ -137,11 +141,14 @@ public class ClientSocket {
 		} catch (IOException e) {
 			e.printStackTrace();
 			LOGGER.log(Level.SEVERE, "Error loading config");
+			//If config can't be loaded, abort
+			System.exit(0);
 		}
 	}
 
 	public static void main(String[] args) throws InterruptedException, URISyntaxException {
 
+		//Load config file before attempting
 		loadConfig();
 
 		if (SCANNER_IP.equals("") || PORT == 0)

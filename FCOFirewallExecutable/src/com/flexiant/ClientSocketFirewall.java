@@ -24,7 +24,7 @@ import com.jcraft.jsch.Session;
  * Use case yet to be considered - handling multiple creation of VMs
  */
 public class ClientSocketFirewall {
-
+	
 	private static final LogManager LOG_MANAGER = LogManager.getLogManager();
 	private static final Logger LOGGER = Logger.getLogger("logger");
 
@@ -44,7 +44,8 @@ public class ClientSocketFirewall {
 	}
 
 	public static void main(String[] args) throws InterruptedException {
-
+		
+		//Two arguments, server IP and the key String
 		if (args.length == 2) {
 			String serverIP = args[0];
 			String serverKey = args[1];
@@ -57,7 +58,8 @@ public class ClientSocketFirewall {
 		}
 		System.exit(0);
 	}
-
+	
+	//Encrypt IP and key for extra security
 	public static SealedObject sealDetails(KeyDetails details) {
 
 		try {
@@ -76,7 +78,8 @@ public class ClientSocketFirewall {
 			return null;
 		}
 	}
-
+	
+	//Send the IP and key to the scanner listener
 	static void sendDataOverSocket(KeyDetails details) {
 		LOGGER.log(Level.FINE, "Attempt to send the file");
 		Socket socket = null;
@@ -86,7 +89,7 @@ public class ClientSocketFirewall {
 			String host = SCANNER_IP;
 			socket = new Socket(host, PORT);
 			SealedObject sealedDetails = sealDetails(details);
-
+			
 			oos = new ObjectOutputStream(socket.getOutputStream());
 			oos.writeObject(sealedDetails);
 			LOGGER.log(Level.INFO, "The data has been sent to the scanner VM");
