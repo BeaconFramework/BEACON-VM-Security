@@ -29,20 +29,20 @@ Both Executable JARs use config files to load details.
 
 ### scannerConfig.properties
 
-	***FCOCloudUsernameCredential***
-	***FCOCloudPasswordCredential***
-	***FCOCloudAdminUUID***
-	***FCOAdminEndpoint***
-	***FCOUserEndpoint***
+***FCOCloudUsernameCredential***
+***FCOCloudPasswordCredential***
+***FCOCloudAdminUUID***
+***FCOAdminEndpoint***
+***FCOUserEndpoint***
 
-	***OpenstackCloudUsernameCredential***
-	***OpenstackCloudPasswordCredential***
-	***OpenstackCloudAdminUUID***
-	***OpenstackAdminEndpoint***
-	***OpenstackUserEndpoint***
+***OpenstackCloudUsernameCredential***
+***OpenstackCloudPasswordCredential***
+***OpenstackCloudAdminUUID***
+***OpenstackAdminEndpoint***
+***OpenstackUserEndpoint***
 	
-	***OpenNebulaCloudUsernameCredential***
-	***OpenNebulaCloudPasswordCredential***
-	***OpenNebulaCloudAdminUUID***
-	***OpenNebulaAdminEndpoint***
-	***OpenNebulaUserEndpoint***
+***OpenNebulaCloudUsernameCredential***
+***OpenNebulaCloudPasswordCredential***
+***OpenNebulaCloudAdminUUID***
+***OpenNebulaAdminEndpoint***
+***OpenNebulaUserEndpoint***
