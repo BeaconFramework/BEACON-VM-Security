@@ -34,36 +34,24 @@ Both Executable JARs use config files to load details.
 
 ### FCO Credentials
 
-***FCOCloudUsernameCredential***
-
-***FCOCloudPasswordCredential***
-
-***FCOCloudAdminUUID***
-
-***FCOAdminEndpoint***
-
+***FCOCloudUsernameCredential,***
+***FCOCloudPasswordCredential,***
+***FCOCloudAdminUUID,***
+***FCOAdminEndpoint,***
 ***FCOUserEndpoint***
 
 ### Openstack Credentials
 
-***OpenstackCloudUsernameCredential***
-
-***OpenstackCloudPasswordCredential***
-
-***OpenstackCloudAdminUUID***
-
-***OpenstackAdminEndpoint***
-
+***OpenstackCloudUsernameCredential,***
+***OpenstackCloudPasswordCredential,***
+***OpenstackCloudAdminUUID,***
+***OpenstackAdminEndpoint,***
 ***OpenstackUserEndpoint***
 
 ### OpenNebula Credentials
 	
-***OpenNebulaCloudUsernameCredential***
-
-***OpenNebulaCloudPasswordCredential***
-
-***OpenNebulaCloudAdminUUID***
-
-***OpenNebulaAdminEndpoint***
-
+***OpenNebulaCloudUsernameCredential,***
+***OpenNebulaCloudPasswordCredential,***
+***OpenNebulaCloudAdminUUID,***
+***OpenNebulaAdminEndpoint,***
 ***OpenNebulaUserEndpoint***
