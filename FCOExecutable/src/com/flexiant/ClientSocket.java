@@ -1,9 +1,17 @@
 package com.flexiant;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.security.CodeSource;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -25,12 +33,16 @@ import com.jcraft.jsch.Session;
  */
 public class ClientSocket {
 
+	// FLEX(8341),
+	// OPEN_STACK (8342),
+	// OPEN_NEBULA (8343);
+
 	private static final LogManager LOG_MANAGER = LogManager.getLogManager();
 	private static final Logger LOGGER = Logger.getLogger("logger");
 
 	// IP of the server hosting openvas
-	private static final String SCANNER_IP = "109.231.126.132";
-	private static final int PORT = 8341;
+	private static String SCANNER_IP = "";
+	private static int PORT = 0;
 	private static final int SSHPort = 22;
 
 	// Fetch the log configuration
@@ -66,13 +78,13 @@ public class ClientSocket {
 		for (int i = 0; i <= sshTries; i++) {
 
 			try {
-				//Try to SSH to the VM in order to check if it is scannable
+				// Try to SSH to the VM in order to check if it is scannable
 				trySSHConnection(username, password, serverIP, sshPort);
 				result = SSHResult.SUCCESS;
 				return result;
 
 			} catch (Exception e) {
-				//Bad credentials
+				// Bad credentials
 				if (e.getMessage().contains("Auth fail")) {
 
 					result = SSHResult.AUTH_FAIL;
@@ -88,9 +100,54 @@ public class ClientSocket {
 		return result;
 	}
 
-	public static void main(String[] args) throws InterruptedException {
+	public static String getPath() {
+		String decodedPath = new java.io.File(
+				ClientSocket.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getAbsolutePath();
+		decodedPath = decodedPath.substring(0, decodedPath.lastIndexOf("."));
+		decodedPath = decodedPath + System.getProperty("java.class.path");
 
-		//No credentials
+		int index = decodedPath.lastIndexOf('/');
+		decodedPath = decodedPath.substring(0, index);
+		
+		decodedPath = decodedPath + "/FCOExecutable.properties";
+		return decodedPath;
+	}
+
+	public static void loadConfig() throws URISyntaxException {
+
+		Properties prop = new Properties();
+		InputStreamReader in = null;
+		try {
+
+			String decodedPath = getPath();
+			LOGGER.log(Level.INFO, "Path: " + decodedPath);
+
+			if (decodedPath.equals("."))
+				decodedPath = "/FCOExecutable.properties";
+
+			in = new InputStreamReader(new FileInputStream(decodedPath), "UTF-8");
+			prop.load(in);
+
+			SCANNER_IP = prop.getProperty("scannerIP");
+			PORT = Integer.parseInt(prop.getProperty("port"));
+
+			LOGGER.log(Level.INFO, "Scanner IP: " + SCANNER_IP);
+			LOGGER.log(Level.INFO, "Port: " + PORT);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			LOGGER.log(Level.SEVERE, "Error loading config");
+		}
+	}
+
+	public static void main(String[] args) throws InterruptedException, URISyntaxException {
+
+		loadConfig();
+
+		if (SCANNER_IP.equals("") || PORT == 0)
+			System.exit(0);
+
+		// No credentials
 		if (args.length == 3) {
 			String serverUUID = args[0];
 			String serverIP = args[1];
@@ -102,8 +159,8 @@ public class ClientSocket {
 			VMDetails details = new VMDetails(serverIP, serverUUID, emailID, null, null);
 			sendDataOverSocket(details);
 		}
-		
-		//4 args may indicate a username but no password, or vice versa
+
+		// 4 args may indicate a username but no password, or vice versa
 		else if (args.length == 4) {
 			String serverUUID = args[0];
 			String serverIP = args[1];
@@ -113,11 +170,11 @@ public class ClientSocket {
 			LOGGER.log(Level.INFO, "Executable has been passed with following args: " + serverUUID + " " + serverIP
 					+ " " + emailID + " " + usernameOrPassword);
 			Enum<SSHResult> connection = getSSHConnectionResult(usernameOrPassword, null, serverIP, SSHPort);
-			
-			parseEnumOutput(connection,serverUUID,serverIP,emailID,usernameOrPassword,null);
+
+			parseEnumOutput(connection, serverUUID, serverIP, emailID, usernameOrPassword, null);
 		}
 
-		//VM Details + credentials
+		// VM Details + credentials
 		else if (args.length == 5) {
 			String serverUUID = args[0];
 			String serverIP = args[1];
@@ -130,20 +187,20 @@ public class ClientSocket {
 
 			Enum<SSHResult> connection = getSSHConnectionResult(username, password, serverIP, SSHPort);
 
-			parseEnumOutput(connection,serverUUID,serverIP,emailID,username,password);
+			parseEnumOutput(connection, serverUUID, serverIP, emailID, username, password);
 
 		} else {
 			LOGGER.log(Level.SEVERE, "Number of arguments: " + args.length);
-			LOGGER.log(Level.SEVERE, "Error - No arguments passed");
+			LOGGER.log(Level.SEVERE, "Error - Bad arguments");
 		}
 		System.exit(0);
 	}
 
-	public static boolean parseEnumOutput(Enum<SSHResult> enumResult, String serverUUID, String serverIP, String emailID,
-			String username, String password) {
+	public static boolean parseEnumOutput(Enum<SSHResult> enumResult, String serverUUID, String serverIP,
+			String emailID, String username, String password) {
 
 		if (enumResult.equals(SSHResult.SUCCESS)) {
-			//Credentials are correct
+			// Credentials are correct
 			VMDetails details = new VMDetails(serverIP, serverUUID, emailID, username, password);
 			sendDataOverSocket(details);
 			return true;
@@ -151,24 +208,24 @@ public class ClientSocket {
 
 		else if (enumResult.equals(SSHResult.AUTH_FAIL)) {
 
-			//Credentials are incorrect, continue scan without them
+			// Credentials are incorrect, continue scan without them
 			VMDetails details = new VMDetails(serverIP, serverUUID, emailID, "nil", "nil");
 			sendDataOverSocket(details);
 			return true;
 		}
 
 		else if (enumResult.equals(SSHResult.REFUSED)) {
-			//VM unresponsive, cancel scan
+			// VM unresponsive, cancel scan
 			LOGGER.log(Level.SEVERE, "Unable to connect to VM, aborting");
 			return false;
 		}
-		
+
 		else
 			return false;
 
 	}
 
-	//Returns an encrypted version of VMDetails
+	// Returns an encrypted version of VMDetails
 	public static SealedObject sealDetails(VMDetails details) {
 
 		try {
