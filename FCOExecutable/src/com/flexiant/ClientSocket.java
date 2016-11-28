@@ -44,6 +44,7 @@ public class ClientSocket {
 	private static String SCANNER_IP = "";
 	private static int PORT = 0;
 	private static final int SSHPort = 22;
+	private static final String SSHKEYPASSWORD = "useSSHkey";
 
 	// Fetch the log configuration
 	static {
@@ -192,8 +193,11 @@ public class ClientSocket {
 			LOGGER.log(Level.INFO, "Executable has been passed with following args: " + serverUUID + " " + serverIP
 					+ " " + emailID + " " + username + " " + password);
 
-			Enum<SSHResult> connection = getSSHConnectionResult(username, password, serverIP, SSHPort);
-
+			Enum<SSHResult> connection;
+			if(password.equals(SSHKEYPASSWORD))
+				connection = SSHResult.SUCCESS;
+			else
+				connection = getSSHConnectionResult(username, password, serverIP, SSHPort);
 			parseEnumOutput(connection, serverUUID, serverIP, emailID, username, password);
 
 		} else {
