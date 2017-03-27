@@ -10,7 +10,7 @@ The three main aspects of this use case that are combined to deliver a security 
 * Firewall Deployment
 * Chef integration
 
-These three main aspects of the use case are automatically orchestrated by a JAR file, comprised of the code found in the VulnerabilityScanner folder.  This JAR file (known as the 'listener') 'listens' for incoming virtual machine details (UUID, IP Address, email address etc.) from the 'forwarder', a seperate JAR file comprised of the code found in the FCOExecutable folder.  Virtual machine details are gathered by an 'activator script' running on the cloud platform, which detect the creation of a new VM.  The activator script calls the forwarder with these VM details, which then sends them to the listener application.
+These three main aspects of the use case are automatically orchestrated by a JAR file, comprised of the code found in the VulnerabilityScanner folder.  This JAR file (known as the 'listener') 'listens' for incoming virtual machine details (UUID, IP Address, email address etc.) from the 'forwarder', a seperate JAR file comprised of the code found in the ForwarderExecutable folder.  Virtual machine details are gathered by an 'activator script' running on the cloud platform, which detect the creation of a new VM.  The activator script calls the forwarder with these VM details, which then sends them to the listener application.
 
 ![Screenshot](BEACON%20Flow%20diagram.png)
 
