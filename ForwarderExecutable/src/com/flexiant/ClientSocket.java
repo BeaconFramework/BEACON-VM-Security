@@ -75,7 +75,7 @@ public class ClientSocket {
 			int sshPort) throws InterruptedException {
 
 		// Number of times to try connection
-		int sshTries = 6;
+		int sshTries = 12;
 		Enum<SSHResult> result;
 		for (int i = 0; i <= sshTries; i++) {
 
@@ -124,6 +124,7 @@ public class ClientSocket {
 		try {
 
 			String decodedPath = getPath();
+			
 			LOGGER.log(Level.INFO, "Path: " + decodedPath);
 
 			if (decodedPath.equals("."))
@@ -131,7 +132,7 @@ public class ClientSocket {
 
 			in = new InputStreamReader(new FileInputStream(decodedPath), "UTF-8");
 			prop.load(in);
-			
+
 			//Load parameters from the file
 			SCANNER_IP = prop.getProperty("scannerIP");
 			PORT = Integer.parseInt(prop.getProperty("port"));
